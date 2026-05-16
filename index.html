@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rifa Solidária Pro-Danilo</title>
+    <title>Rifa Solidária Pro-Danilo V2</title>
     <style>
         * {
             box-sizing: border-box;
@@ -216,7 +217,7 @@
             background: #092c4e;
         }
 
-        /* Modal */
+        /* Modais */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -264,6 +265,26 @@
             margin-bottom: 10px;
         }
 
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
         .numeros-escolhidos {
             background: #faf8f5;
             padding: 10px;
@@ -304,6 +325,15 @@
 
         .btn-voltar:hover {
             background: #d5d5d5;
+        }
+
+        .btn-salvar {
+            background: #0d3b66;
+            color: #fff;
+        }
+
+        .btn-salvar:hover {
+            background: #092c4e;
         }
 
         .btn-pagar {
@@ -364,7 +394,7 @@
         <section class="grid-container">
             <div class="grid-title">Selecione os seus números abaixo:</div>
             <div class="numeros-grid" id="gridNumeros">
-                <!-- Números gerados via JS exatamente iguais aos da imagem (pulando os terminados em 4 e 8) -->
+                <!-- Gerado via JS dinamicamente -->
             </div>
         </section>
 
@@ -381,7 +411,28 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmação -->
+    <!-- MODAL 1: Cadastro do Cliente por Número -->
+    <div class="modal-overlay" id="modalCadastro">
+        <div class="modal-content">
+            <div class="modal-title">Dados do Comprador - Número <span id="numSelecionadoTitulo">0</span></div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="nomeCliente">Nome Completo:</label>
+                    <input type="text" id="nomeCliente" placeholder="Digite seu nome">
+                </div>
+                <div class="form-group">
+                    <label for="whatsappCliente">WhatsApp:</label>
+                    <input type="text" id="whatsappCliente" placeholder="(00) 00000-0000">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-voltar" id="btnCancelarCadastro">Cancelar</button>
+                <button class="btn-modal btn-salvar" id="btnSalvarCadastro">Confirmar Número</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Confirmação e Pagamento -->
     <div class="modal-overlay" id="modalConfirmacao">
         <div class="modal-content">
             <div class="modal-title">Confirmação de Reserva</div>
@@ -403,46 +454,80 @@
 
     <!-- Lógica do Sistema -->
     <script>
-        // Array para guardar os números selecionados
-        let numerosSelecionados = [];
+        // Estrutura para armazenar os dados dos compradores por número
+        // Chave: número escolhido, Valor: { nome: '', whatsapp: '' }
+        let reservas = JSON.parse(localStorage.getItem('rifa_reservas')) || {};
+        // Guarda os dados do primeiro cadastro de forma fixa no dispositivo
+        let dadosComprador = JSON.parse(localStorage.getItem('rifa_dados_comprador')) || null;
+        
         const valorPorNumero = 15.00;
+        let numeroSendoEditado = null;
+
+        // URL do Web App do Google Apps Script que processará os dados enviando à Planilha
+        // ATENÇÃO: Substitua pelo link gerado na implantação (Deploy) do seu script do Google
+        const WEB_APP_URL = "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI";
 
         // Elementos da interface
         const gridNumeros = document.getElementById('gridNumeros');
         const btnProximo = document.getElementById('btnProximo');
+        
+        // Modal Cadastro
+        const modalCadastro = document.getElementById('modalCadastro');
+        const numSelecionadoTitulo = document.getElementById('numSelecionadoTitulo');
+        const nomeCliente = document.getElementById('nomeCliente');
+        const whatsappCliente = document.getElementById('whatsappCliente');
+        const btnCancelarCadastro = document.getElementById('btnCancelarCadastro');
+        const btnSalvarCadastro = document.getElementById('btnSalvarCadastro');
+
+        // Modal Confirmação
         const modalConfirmacao = document.getElementById('modalConfirmacao');
         const modalNumeros = document.getElementById('modalNumeros');
         const modalTotal = document.getElementById('modalTotal');
         const btnVoltar = document.getElementById('btnVoltar');
         const btnPagar = document.getElementById('btnPagar');
 
-        // Renderiza os botões respeitando exatamente a imagem enviada.
-        // A imagem pula todos os números que terminam com 4 e com 8 (ex: não tem 4, 8, 14, 18, 24, 28...)
+        // Renderiza os botões respeitando os números da imagem (sem terminados em 4 ou 8)
         function gerarGrid() {
             for (let i = 1; i <= 100; i++) {
                 let ultimoDigito = i % 10;
-                
-                // Ignora números terminados em 4 ou 8
                 if (ultimoDigito === 4 || ultimoDigito === 8) {
                     continue;
                 }
 
-                // Cria o botão do número
                 const botao = document.createElement('button');
                 botao.classList.add('num-btn');
                 botao.innerText = i;
                 botao.type = 'button';
+                botao.id = `btn-num-${i}`;
 
-                // Evento de clique para selecionar/desmarcar
+                // Se o número já estiver nas reservas salvas localmente, marca como selecionado
+                if (reservas[i]) {
+                    botao.classList.add('selecionado');
+                }
+
                 botao.addEventListener('click', function() {
-                    if (numerosSelecionados.includes(i)) {
-                        // Se já estiver selecionado, remove da lista
-                        numerosSelecionados = numerosSelecionados.filter(num => num !== i);
+                    numeroSendoEditado = i;
+                    
+                    if (reservas[i]) {
+                        // Se já estava selecionado, desmarca direto e remove os dados
+                        delete reservas[i];
+                        localStorage.setItem('rifa_reservas', JSON.stringify(reservas));
                         botao.classList.remove('selecionado');
                     } else {
-                        // Se não estiver selecionado, adiciona na lista
-                        numerosSelecionados.push(i);
-                        botao.classList.add('selecionado');
+                        numSelecionadoTitulo.innerText = i;
+
+                        // Se já existir dados de um cadastro anterior, preenche automaticamente os inputs
+                        if (dadosComprador) {
+                            nomeCliente.value = dadosComprador.nome;
+                            whatsappCliente.value = dadosComprador.whatsapp;
+                        } else {
+                            // Se for o primeiro de tudo, deixa os campos limpos
+                            nomeCliente.value = '';
+                            whatsappCliente.value = '';
+                        }
+                        
+                        // Abre o modal de cadastro para o usuário revisar ou preencher os dados
+                        modalCadastro.style.display = 'flex';
                     }
                 });
 
@@ -450,45 +535,100 @@
             }
         }
 
-        // Ação do botão Próximo Passo
-        btnProximo.addEventListener('click', function() {
-            if (numerosSelecionados.length === 0) {
-                alert('Por favor, selecione pelo menos um número antes de prosseguir.');
+        // Eventos do Modal de Cadastro
+        btnCancelarCadastro.addEventListener('click', function() {
+            modalCadastro.style.display = 'none';
+            numeroSendoEditado = null;
+        });
+
+        btnSalvarCadastro.addEventListener('click', function() {
+            const nome = nomeCliente.value.trim();
+            const whatsapp = whatsappCliente.value.trim();
+
+            if (!nome || !whatsapp) {
+                alert('Por favor, preencha todos os campos.');
                 return;
             }
 
-            // Ordena os números de forma crescente para exibir bonito no modal
-            numerosSelecionados.sort((a, b) => a - b);
+            // Salva os dados do comprador de forma fixa no localStorage do dispositivo
+            dadosComprador = { nome: nome, whatsapp: whatsapp };
+            localStorage.setItem('rifa_dados_comprador', JSON.stringify(dadosComprador));
 
-            // Injeta as informações no modal
+            // Salva na memória de reservas atuais
+            reservas[numeroSendoEditado] = { nome: nome, whatsapp: whatsapp };
+            localStorage.setItem('rifa_reservas', JSON.stringify(reservas));
+            
+            // Pinta o botão de vermelho
+            const botao = document.getElementById(`btn-num-${numeroSendoEditado}`);
+            if (botao) botao.classList.add('selecionado');
+
+            // Envia de forma assíncrona para a Planilha do Google via Apps Script
+            enviarParaPlanilha(numeroSendoEditado, nome, whatsapp);
+
+            // Fecha o modal de cadastro
+            modalCadastro.style.display = 'none';
+            numeroSendoEditado = null;
+        });
+
+        // Função responsável por fazer o envio POST/GET para o Google Sheets
+        function enviarParaPlanilha(numero, nome, whatsapp) {
+            if (WEB_APP_URL === "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI") {
+                console.log("Mock de envio para a planilha:", { numero, nome, whatsapp });
+                return; // Remove ou altera se já tiver o link do Apps Script implantado
+            }
+
+            // Envia utilizando a técnica de URLSearchParams ou Fetch para evitar bloqueios de CORS comuns
+            const dados = new URLSearchParams();
+            dados.append('numero', numero);
+            dados.append('nome', nome);
+            dados.append('whatsapp', whatsapp);
+
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: dados,
+                mode: 'no-cors' // Modo no-cors é ideal para submissões silenciosas de formulários para o Google Apps Script
+            })
+            .then(() => console.log(`Dados do número ${numero} enviados com sucesso!`))
+            .catch(error => console.error("Erro ao enviar para planilha:", error));
+        }
+
+        // Ação do botão Próximo Passo
+        btnProximo.addEventListener('click', function() {
+            const numerosSelecionados = Object.keys(reservas).map(Number);
+
+            if (numerosSelecionados.length === 0) {
+                alert('Por favor, selecione e cadastre pelo menos um número.');
+                return;
+            }
+
+            numerosSelecionados.sort((a, b) => a - b);
             modalNumeros.innerText = numerosSelecionados.join(', ');
             
-            // Calcula o valor total
             const total = numerosSelecionados.length * valorPorNumero;
             modalTotal.innerText = `Total: R$ ${total.toFixed(2).replace('.', ',')}`;
 
-            // Exibe o modal mudando o display para flex
             modalConfirmacao.style.display = 'flex';
         });
 
-        // Ação de fechar o modal (Botão Voltar)
+        // Fechar Modal de Confirmação
         btnVoltar.addEventListener('click', function() {
             modalConfirmacao.style.display = 'none';
         });
 
-        // Ação do botão Pagar
+        // Ação do botão Pagar Final
         btnPagar.addEventListener('click', function() {
+            const numerosSelecionados = Object.keys(reservas).map(Number).sort((a, b) => a - b);
             const total = numerosSelecionados.length * valorPorNumero;
-            alert(`Reserva realizada com sucesso!
+            
+            alert(`Sua solicitação de reserva foi registrada para os números: ${numerosSelecionados.join(', ')}.
 
-Números: ${numerosSelecionados.join(', ')}
-Total: R$ ${total.toFixed(2).replace('.', ',')}
+Total a transferir: R$ ${total.toFixed(2).replace('.', ',')}
 
-Efetue o pagamento na chave PIX: 62 981147479 para validar sua participação.`);
+Efetue o pagamento na chave PIX: 62 981147479 para validar.`);
             modalConfirmacao.style.display = 'none';
         });
 
-        // Inicializa a tabela ao carregar a página
+        // Inicializa a página
         gerarGrid();
     </script>
 </body>
