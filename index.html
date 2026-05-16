@@ -1,11 +1,9 @@
-
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rifa Solidária Pro-Danilo V2</title>
+    <title>Rifa V2.0</title>
     <style>
         * {
             box-sizing: border-box;
@@ -368,6 +366,15 @@
             background: #00664d;
         }
 
+        .btn-copiar-pix {
+            background: #d1a153;
+            color: #fff;
+        }
+
+        .btn-copiar-pix:hover {
+            background: #b58941;
+        }
+
         /* Ajustes Responsivos */
         @media (max-width: 600px) {
             .numeros-grid {
@@ -388,10 +395,10 @@
     <div class="container">
         <!-- Cabeçalho -->
         <header>
-            <div class="logo-text">🤝 Rifa Solidária Pro-Danilo</div>
             <h1>SORTEIO BENEFICENTE</h1>
-            <h2>EM PROL DE AJUDAR NOSSO AMIGO DANILO</h2>
-            <div class="subtitle">APÓS ACIDENTE DE MOTO - FORÇA DANILO!</div>
+            <h2>EM PROL DE AJUDAR NOSSO AMIGO 
+                <br><strong style="color: red;">Danilo</strong></h2>
+            <div class="subtitle">APÓS UM ACIDENTE DE MOTO</div>
         </header>
 
         <!-- Seção de Prêmios -->
@@ -414,7 +421,7 @@
                 <span class="badge">3º PRÊMIO</span>
                 <div class="premio-titulo premio-pix">R$ 50,00 VIA PIX</div>
                 <div class="premio-detalhe">PIX no valor de Cinquenta Reais</div>
-                <img src="LINK_DA_SUA_IMAGEM_AQUI" alt="Prêmio PIX" class="premio-img">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXI-s7W3gQDzD1N_CxUs80kL4xKUnt-PxHfqiARsTGz8zVZvlDVU0sPP0&s=10" alt="Prêmio PIX" class="premio-img">
                 <p>imagem ilustrativa</p>
             </div>
         </section>
@@ -431,7 +438,9 @@
         <section class="info-rifa">
             <p class="valor-destaque">VALOR DA RIFA: R$ 15,00 <span style="font-size: 14px; color: #555; font-weight: normal;">(por número)</span></p>
             <p><strong>DATA DO SORTEIO:</strong> Quando todos os números forem preenchidos</p>
-            <p><strong>PAGAMENTO VIA PIX CHAVE:</strong> <span class="chave-pix">62 981147479</span></p>
+            <p><strong>PAGAMENTO VIA PIX CHAVE:</strong> <span class="chave-pix">62 981147479</span>
+                
+            </p>
         </section>
 
         <!-- Ação Principal -->
@@ -471,12 +480,15 @@
                 <div class="valor-total" id="modalTotal">Total: R$ 0,00</div>
                 <p style="margin-top: 15px; font-size: 13px; color: #666;">
                     Para concluir, realize o pagamento via PIX para a chave:<br>
-                    <strong>62 981147479</strong>
+                    <strong>62 981147479</strong><br>
+                    ou<br>
+                    ultiize o link de pagamento na mensagem do whatsApp clicando em Pagar
                 </p>
             </div>
             <div class="modal-footer">
                 <button class="btn-modal btn-voltar" id="btnVoltar">Voltar</button>
-                <button class="btn-modal btn-pagar" id="btnPagar">Pagar</button>
+                <button class="btn-modal btn-copiar-pix" id="btnCopiarPix">Copiar PIX</button>
+                <button class="btn-modal btn-pagar" id="btnPagar">Finalizar</button>
             </div>
         </div>
     </div>
@@ -527,6 +539,7 @@
         const modalNumeros = document.getElementById('modalNumeros');
         const modalTotal = document.getElementById('modalTotal');
         const btnVoltar = document.getElementById('btnVoltar');
+        const btnCopiarPix = document.getElementById('btnCopiarPix');
         const btnPagar = document.getElementById('btnPagar');
 
         // Função para ler os dados vindos diretamente do link CSV da planilha
@@ -667,8 +680,13 @@
             modalConfirmacao.style.display = 'none';
         });
 
-        // Ação do botão Pagar Final - Abre o WhatsApp
-        btnPagar.addEventListener('click', function() {
+        // Função interna para processar o envio do Whatsapp e cópia do pix
+        function finalizarEEnviar() {
+            // Copia a chave Pix para a área de transferência do celular/computador
+            navigator.clipboard.writeText("62981147479").catch(err => {
+                console.error("Erro ao copiar PIX automaticamente: ", err);
+            });
+
             const numerosSelecionados = Object.keys(reservas).map(Number).sort((a, b) => a - b);
             const total = numerosSelecionados.length * valorPorNumero;
             const totalChave = total.toFixed(2);
@@ -685,7 +703,7 @@
             textoWhatsapp += `🔢 *Números Escolhidos:* ${numerosSelecionados.join(', ')}\n`;
             textoWhatsapp += `💰 *Valor Total:* R$ ${total.toFixed(2).replace('.', ',')}\n\n`;
             textoWhatsapp += `🔗 *Link para Pagamento:* ${linkPagamentoExato}\n\n`;
-            textoWhatsapp += `Por favor, valide meus números assim que o pagamento for confirmado!`;
+            textoWhatsapp += `Por favor, nos enviar o comprovante para valide seu números!`;
 
             const textoCodificado = encodeURIComponent(textoWhatsapp);
             const numeroDestino = "5562995679219";
@@ -695,6 +713,16 @@
             window.open(urlFinalWhatsapp, '_blank');
 
             modalConfirmacao.style.display = 'none';
+        }
+
+        // Ação do botão Copiar PIX
+        btnCopiarPix.addEventListener('click', function() {
+            finalizarEEnviar();
+        });
+
+        // Ação do botão Finalizar - Abre o WhatsApp
+        btnPagar.addEventListener('click', function() {
+            finalizarEEnviar();
         });
 
         // Inicializa a página carregando os dados da planilha antes de tudo
@@ -702,3 +730,4 @@
     </script>
 </body>
 </html>
+
