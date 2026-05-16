@@ -463,6 +463,21 @@
         const valorPorNumero = 15.00;
         let numeroSendoEditado = null;
 
+        // ==========================================
+        // TABELA DE LINKS DE PAGAMENTO POR VALOR TOTAL
+        // Adicione aqui os valores e os respectivos links
+        // ==========================================
+        const LINKS_PAGAMENTO = {
+            "15.00": "https://link.pagamento.com/valor-15",
+            "30.00": "https://link.pagamento.com/valor-30",
+            "45.00": "https://link.pagamento.com/valor-45",
+            "60.00": "https://link.pagamento.com/valor-60",
+            "75.00": "https://link.pagamento.com/valor-75",
+            "90.00": "https://link.pagamento.com/valor-90",
+            "105.00": "https://link.pagamento.com/valor-105"
+            // Você pode adicionar mais valores seguindo o padrão acima
+        };
+
         // URL do Web App do Google Apps Script que processará os dados enviando à Planilha
         // ATENÇÃO: Substitua pelo link gerado na implantação (Deploy) do seu script do Google
         const WEB_APP_URL = "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI";
@@ -615,16 +630,39 @@
             modalConfirmacao.style.display = 'none';
         });
 
-        // Ação do botão Pagar Final
+        // Ação do botão Pagar Final - Abre o WhatsApp
         btnPagar.addEventListener('click', function() {
             const numerosSelecionados = Object.keys(reservas).map(Number).sort((a, b) => a - b);
             const total = numerosSelecionados.length * valorPorNumero;
+            const totalChave = total.toFixed(2); // Formato "15.00", "30.00" para buscar o link
             
-            alert(`Sua solicitação de reserva foi registrada para os números: ${numerosSelecionados.join(', ')}.
+            // Busca o link na tabela criada. Se não achar, deixa vazio ou com uma mensagem padrão
+            const linkPagamentoExato = LINKS_PAGAMENTO[totalChave] || "Link de pagamento não configurado para este valor.";
 
-Total a transferir: R$ ${total.toFixed(2).replace('.', ',')}
+            // Pega as informações do primeiro número cadastrado para identificar o comprador
+            const primeiroNumero = numerosSelecionados[0];
+            const nomeComprador = reservas[primeiroNumero]?.nome || dadosComprador?.nome || "";
+            const whatsComprador = reservas[primeiroNumero]?.whatsapp || dadosComprador?.whatsapp || "";
 
-Efetue o pagamento na chave PIX: 62 981147479 para validar.`);
+            // Monta o texto que será enviado no WhatsApp de forma organizada e legível
+            let textoWhatsapp = `Olá! Gostaria de confirmar a minha reserva da Rifa Solidária Pro-Danilo.\n\n`;
+            textoWhatsapp += `👤 *Nome:* ${nomeComprador}\n`;
+            textoWhatsapp += `📱 *WhatsApp:* ${whatsComprador}\n\n`;
+            textoWhatsapp += `🔢 *Números Escolhidos:* ${numerosSelecionados.join(', ')}\n`;
+            textoWhatsapp += `💰 *Valor Total:* R$ ${total.toFixed(2).replace('.', ',')}\n\n`;
+            textoWhatsapp += `🔗 *Link para Pagamento:* ${linkPagamentoExato}\n\n`;
+            textoWhatsapp += `Por favor, valide meus números assim que o pagamento for confirmado!`;
+
+            // Codifica o texto para formato de URL segura
+            const textoCodificado = encodeURIComponent(textoWhatsapp);
+            const numeroDestino = "5562995679219"; // Número configurado
+
+            // Monta o link da API oficial do WhatsApp
+            const urlFinalWhatsapp = `https://api.whatsapp.com/send?phone=${numeroDestino}&text=${textoCodificado}`;
+
+            // Abre em uma nova aba do navegador redirecionando o cliente
+            window.open(urlFinalWhatsapp, '_blank');
+
             modalConfirmacao.style.display = 'none';
         });
 
