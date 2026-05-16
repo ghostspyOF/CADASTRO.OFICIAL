@@ -393,7 +393,6 @@
 <body>
 
     <div class="container">
-        <!-- Cabeçalho -->
         <header>
             <h1>SORTEIO BENEFICENTE</h1>
             <h2>EM PROL DE AJUDAR NOSSO AMIGO 
@@ -401,7 +400,6 @@
             <div class="subtitle">APÓS UM ACIDENTE DE MOTO</div>
         </header>
 
-        <!-- Seção de Prêmios -->
         <section class="premios-container">
             <div class="premio-card">
                 <span class="badge">1º PRÊMIO</span>
@@ -426,15 +424,12 @@
             </div>
         </section>
 
-        <!-- Grade de Números -->
         <section class="grid-container">
             <div class="grid-title">Selecione os seus números abaixo:</div>
             <div class="numeros-grid" id="gridNumeros">
-                <!-- Gerado via JS dinamicamente -->
-            </div>
+                </div>
         </section>
 
-        <!-- Informações de Rodapé -->
         <section class="info-rifa">
             <p class="valor-destaque">VALOR DA RIFA: R$ 15,00 <span style="font-size: 14px; color: #555; font-weight: normal;">(por número)</span></p>
             <p><strong>DATA DO SORTEIO:</strong> Quando todos os números forem preenchidos</p>
@@ -443,13 +438,11 @@
             </p>
         </section>
 
-        <!-- Ação Principal -->
         <div class="acao-container">
             <button class="btn-proximo" id="btnProximo">Próximo Passo</button>
         </div>
     </div>
 
-    <!-- MODAL 1: Cadastro do Cliente por Número -->
     <div class="modal-overlay" id="modalCadastro">
         <div class="modal-content">
             <div class="modal-title">Dados do Comprador - Número <span id="numSelecionadoTitulo">0</span></div>
@@ -470,7 +463,6 @@
         </div>
     </div>
 
-    <!-- MODAL 2: Confirmação e Pagamento -->
     <div class="modal-overlay" id="modalConfirmacao">
         <div class="modal-content">
             <div class="modal-title">Confirmação de Reserva</div>
@@ -488,12 +480,11 @@
             <div class="modal-footer">
                 <button class="btn-modal btn-voltar" id="btnVoltar">Voltar</button>
                 <button class="btn-modal btn-copiar-pix" id="btnCopiarPix">Copiar PIX</button>
-                <button class="btn-modal btn-pagar" id="btnPagar">Finalizar</button>
+                <button class="btn-modal btn-pagar" id="btnPagar">Copiar PIX</button>
             </div>
         </div>
     </div>
 
-    <!-- Lógica do Sistema -->
     <script>
         // Estrutura para armazenar os dados dos compradores por número
         let reservas = JSON.parse(localStorage.getItem('rifa_reservas')) || {};
@@ -599,6 +590,11 @@
                     botao.classList.add('vendido');
                     botao.disabled = true; // Torna o botão impossível de ser clicado/selecionado
                     gridNumeros.appendChild(botao);
+                    // Se o número foi vendido na planilha e estava selecionado localmente na sessão, removemos para evitar erros
+                    if (reservas[i]) {
+                        delete reservas[i];
+                        localStorage.setItem('rifa_reservas', JSON.stringify(reservas));
+                    }
                     continue;
                 }
 
@@ -731,7 +727,11 @@
 
         // Inicializa a página carregando os dados da planilha antes de tudo
         carregarDadosDaPlanilha();
+
+        // Executa a função carregarDadosDaPlanilha a cada 30 segundos de forma automatizada
+        setInterval(carregarDadosDaPlanilha, 30000);
     </script>
 </body>
 </html>
+
 
