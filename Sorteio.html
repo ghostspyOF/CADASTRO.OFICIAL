@@ -683,7 +683,7 @@
             fecharAdmin();
         }
 
-        function ejecutarSorteio(isTeste) {
+        function executarSorteio(isTeste) {
             const totalInput = document.getElementById('totalNumeros');
             const qtdInput = document.getElementById('qtdSortear');
             const btnOficial = document.getElementById('btnOficial');
@@ -710,7 +710,7 @@
                 return;
             }
 
-            if (total <= 0 || quantity <= 0) {
+            if (total <= 0 || quantidade <= 0) {
                 alert('Os parâmetros numéricos informados devem ser maiores que zero.');
                 return;
             }
@@ -720,7 +720,7 @@
                 return;
             }
 
-            // NOVA REGRA ALTERADA: Se for sorteio oficial e não houver participantes, abre o modal customizado bonito
+            // NOVA REGRA ALTERADA: Se foi sorteio oficial e não houver participantes, abre o modal customizado bonito
             if (!isTeste && Object.keys(bancoParticipantes).length === 0) {
                 document.getElementById('modalAvisoLista').style.display = 'flex';
                 return;
