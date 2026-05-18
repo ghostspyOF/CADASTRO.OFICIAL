@@ -986,14 +986,19 @@ cada um. Muito obrigado por fazerem a diferença e por caminharem conosco pelo b
             const nomeComprador = reservas[primeiroNumero]?.nome || dadosComprador?.nome || "";
             const whatsComprador = reservas[primeiroNumero]?.whatsapp || dadosComprador?.whatsapp || "";
 
-            let textoWhatsapp = `Olá! Gostaria de confirmar a minha reserva da Rifa Solidária Pro-Danilo.\n\n`;
+            let textoWhatsapp = `Olá, ${nomeComprador}! desde agora nós organizadores agradece a sua participação\n\n`;
             textoWhatsapp += `👤 *Nome:* ${nomeComprador}\n`;
             textoWhatsapp += `📱 *WhatsApp:* ${whatsComprador}\n\n`;
             textoWhatsapp += `🔢 *Números Escolhidos:* ${numerosSelecionados.join(', ')}\n`;
             textoWhatsapp += `💰 *Valor Total:* R$ ${total.toFixed(2).replace('.', ',')}\n\n`;
             textoWhatsapp += `🔗 *Pix para Pagamento:* ${linkPagamentoExato}\n\n`;
+            textoWhatsapp += `*Nome do Pix:* Dalton dos Reis Silva\n`;
             textoWhatsapp += `Pague com o Pix ☝️👆\n\n`;
-            textoWhatsapp += `Por favor, nos enviar o comprovante para valide seu números!`;
+            textoWhatsapp += `Por favor, nos enviar o comprovante aqui mesmo para valide seu números!`;
+            textowhatsapp += `Em caso de dúvidas o contato do beneficiário abaixo.\n\n`;
+            textoWhatsapp += `*Contato do Beneficiado*, Danilo: 91986208487\n\n`;
+            textoWhatsapp += `_____________________\n\n`;
+            textoWhatsapp += `*Qualquer dúvida sobre o link(site), eu(62995679219), sou o desenvolvedor e vriador do site.*\n\n`;
 
             const textoCodificado = encodeURIComponent(textoWhatsapp);
             const numeroDestino = "5562995679219";
