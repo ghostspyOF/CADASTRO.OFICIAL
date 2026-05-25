@@ -1,1112 +1,858 @@
 
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rifa V2.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log("ALBATROZ, App configurado com sucesso!", reg))
+            .catch(err => console.log("Erro ao registrar SW:", err));
+        });
+      }
+    </script>
+    
+    <title>Gestão de Cadastros Albatroz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --primary: #007bff;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --dark: #1a1a1a;
+            --gray: #7f8c8d;
+            --warning: #f1c40f;
+            --bg-body: #f0f2f5;
+            --bg-card: white;
+            --text-main: #333;
         }
 
-        body {
-            background-color: #f7f5f0;
-            color: #333;
-            line-height: 1.6;
-            padding: 20px 10px;
+        /* OPÇÃO 6: MODO ESCURO */
+        body.dark-mode {
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --text-main: #e0e0e0;
+            --gray: #aaa;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 20px;
-            border: 1px solid #e0dbd1;
-        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg-body); margin: 0; padding: 10px; color: var(--text-main); transition: 0.3s; }
 
-        /* Cabeçalho */
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px dashed #d1a153;
-            padding-bottom: 20px;
-        }
-
-        .logo-text {
-            font-size: 14px;
-            font-weight: bold;
-            color: #0d3b66;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            margin-bottom: 10px;
-        }
-
-        h1 {
-            color: #0d3b66;
-            font-size: 28px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-
-        h2 {
-            color: #d1a153;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 15px;
-            font-weight: bold;
-        }
-
-        /* Seção de Prêmios */
-        .premios-container {
-            display: block;
-            margin-bottom: 30px;
-        }
-
-        .premio-card {
-            background: #faf8f5;
-            border: 1px solid #e6dfd3;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            text-align: center;
+        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; gap: 15px; }
+        
+        /* ESTILO PARA O CONTAINER DE LOGIN INTEGRADO E DISCRETO */
+        .login-box { 
+            background: var(--bg-card); 
+            padding: 30px 25px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            width: 90%; 
+            max-width: 320px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            border: 1px solid rgba(0, 123, 255, 0.08);
             position: relative;
-        }
-
-        .badge {
-            background: #cc0000;
-            color: #fff;
-            font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            display: inline-block;
-            margin-bottom: 8px;
-        }
-
-        .premio-titulo {
-            font-size: 18px;
-            font-weight: bold;
-            color: #0d3b66;
-            margin-bottom: 5px;
-        }
-
-        .premio-detalhe {
-            font-size: 14px;
-            color: #555;
-            font-style: italic;
-        }
-
-        .premio-pix {
-            color: #008060;
-            font-weight: bold;
-            font-size: 20px;
-        }
-
-        /* Estilo para as imagens dos prêmios */
-        .premio-img {
-            max-width: 100%;
-            height: auto;
-            max-height: 150px;
-            object-fit: contain;
-            border-radius: 8px;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            border: 1px solid #eee;
-            background: #fff;
-        }
-
-        /* Grade de Números */
-        .grid-container {
-            margin: 30px auto;
-            max-width: 600px;
-        }
-
-        .grid-title {
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            color: #0d3b66;
-            margin-bottom: 15px;
-        }
-
-        .numeros-grid {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 8px;
-            justify-content: center;
-        }
-
-        .num-btn {
-            background: #ffffff;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            padding: 10px 0;
-            font-size: 16px;
-            font-weight: bold;
-            color: #000;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-
-        .num-btn:hover {
-            border-color: #0d3b66;
-            background: #f0f4f8;
-        }
-
-        .num-btn.selecionado {
-            background: #cc0000 !important;
-            border-color: #990000 !important;
-            color: #ffffff !important;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* Estilo para números já vendidos vindos da planilha ou salvos no admin local */
-        .num-btn.vendido {
-            background: #cc0000 !important;
-            border-color: #990000 !important;
-            color: #ffffff !important;
-            opacity: 0.6;
-            cursor: not-allowed !important;
-            }
-
-        /* Estilo Modo Admin */
-        body.admin-mode .num-btn {
-            background: #e1ebf5 !important;
-            border-color: #a4c2e6 !important;
-            color: #0d3b66 !important;
-            opacity: 1 !important;
-            cursor: pointer !important;
         }
         
-        body.admin-mode .num-btn.tem-dados {
-            background: #b3d4f7 !important;
-            border-color: #0d3b66 !important;
-            position: relative;
-        }
-
-        /* Informações de valores e pix */
-        .info-rifa {
+        /* INPUTS INVISÍVEIS E EMBUTIDOS NO DESIGN */
+        .login-box input { 
+            width: 100%; 
+            padding: 12px; 
+            border: none; 
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05); 
+            border-radius: 0; 
+            box-sizing: border-box; 
+            background: transparent; 
+            color: var(--text-main); 
+            font-size: 14px; 
             text-align: center;
-            margin: 30px 0;
-            background: #f0f4f8;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 5px solid #0d3b66;
+            outline: none;
+            transition: 0.3s;
+        }
+        
+        .login-box input:focus {
+            border-bottom: 1px solid var(--primary);
         }
 
-        .info-rifa p {
-            margin: 5px 0;
-            font-size: 15px;
+        body.dark-mode .login-box input {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        body.dark-mode .login-box input:focus {
+            border-bottom: 1px solid var(--primary);
         }
 
-        .valor-destaque {
-            font-size: 18px;
-            font-weight: bold;
-            color: #d1a153;
-        }
+        .error-msg { color: var(--danger); font-size: 12px; font-weight: bold; display: none; margin: -5px 0 5px 0; }
 
-        .chave-pix {
-            font-weight: bold;
-            color: #0d3b66;
-            background: #e1ebf5;
-            padding: 2px 6px;
-            border-radius: 4px;
+        /* O CADEADO AGORA ENCAIXA NO DESIGN COMO BOTÃO DE CONFIRMAÇÃO */
+        .btn-unlock { 
+            font-size: 22px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            width: 55px; 
+            height: 55px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3); 
+            transition: all 0.2s; 
+            margin: 10px auto 0 auto; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
         }
+        .btn-unlock:active { transform: scale(0.9); }
+        .btn-login-cadastro { background: var(--success); color: white; border: none; padding: 20px 35px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%; max-width: 320px; }
 
-        /* Botão Próximo Passo */
-        .acao-container {
-            text-align: center;
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
+        #app-content { display: none; }
 
-        .btn-proximo {
-            background: #0d3b66;
-            color: #fff;
-            border: none;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-            transition: background 0.2s;
-            width: 100%;
-            max-width: 300px;
-        }
+        .header-app { max-width: 500px; margin: 0 auto 10px auto; display: flex; justify-content: space-between; align-items: center; }
+        .btn-voltar { background: var(--dark); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        
+        /* BOTÃO DARK MODE */
+        .btn-theme { background: var(--warning); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
 
-        .btn-proximo:hover {
-            background: #092c4e;
-        }
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 500px; margin: 0 auto 15px auto; cursor: pointer; }
+        .dash-item { background: var(--bg-card); padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }
+        .dash-item small { font-size: 10px; text-transform: uppercase; color: var(--gray); display: block; }
+        .dash-item b { font-size: 16px; color: var(--text-main); }
 
-        .admin-botoes-grupo {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+        /* NOVO: ESTILO DASHBOARD ESTATÍSTICO */
+        .stats-container { background: var(--bg-card); padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center; }
+        .bar-chart { display: flex; height: 20px; border-radius: 10px; overflow: hidden; margin: 10px 0; background: #eee; }
+        .bar-segment { height: 100%; transition: width 0.5s; }
 
-        .btn-admin {
-            background: #6c757d;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: background 0.2s;
-        }
+        .cadastro-container { max-width: 500px; margin: 0 auto 20px auto; background: var(--bg-card); padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .grid-form { display: flex; flex-direction: column; gap: 10px; }
+        .grid-form input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; box-sizing: border-box; background: var(--bg-card); color: var(--text-main); }
+        .btn-salvar { padding: 15px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 5px; }
 
-        .btn-admin:hover {
-            background: #5a6268;
-        }
+        .nav-buttons { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 500px; margin: 0 auto; }
+        .btn-modal { padding: 18px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 14px; position: relative; text-transform: uppercase; }
+        #btn-ativos { background: var(--primary); }
+        #btn-fim { background: var(--dark); }
+        #btn-excluidos { background: var(--gray); }
 
-        .btn-backup {
-            background: #d1a153;
-        }
-        .btn-backup:hover {
-            background: #b58941;
-        }
+        .search-container { padding: 10px 0; position: sticky; top: 0; background: var(--bg-body); z-index: 5; }
+        .search-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; background: var(--bg-card); color: var(--text-main); }
+        @keyframes pulse-red { 0% { background: var(--dark); } 50% { background: var(--danger); } 100% { background: var(--dark); } }
+        .alerta-vencendo { animation: pulse-red 0.8s infinite; }
 
-        /* Modais */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 15px;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 1000; overflow-y: auto; padding: 15px; box-sizing: border-box; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: sticky; top: 0; background: var(--bg-body); z-index: 10; padding: 10px 0; }
+        .btn-fechar { background: var(--danger); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-        .modal-content {
-            background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            max-width: 450px;
-            width: 100%;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: fadeIn 0.3s ease;
-        }
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        .card { background: var(--bg-card); border-radius: 10px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; position: relative; border-bottom: 4px solid var(--primary); }
+        .card img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #eee; }
+        .card h4 { margin: 8px 0 4px 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--primary); }
+        .card p { margin: 2px 0; font-size: 11px; color: var(--gray); word-break: break-all; }
+        
+        .card-acesso { background: rgba(0,0,0,0.05); border-radius: 5px; padding: 5px; margin-top: 5px; border-left: 3px solid var(--primary); }
+        .card-acesso div { font-size: 10px; color: var(--text-main); font-weight: bold; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .timer { background: #fff0f0; padding: 4px; border-radius: 4px; margin-top: 8px; font-size: 10px; font-weight: bold; color: var(--danger); text-align: center; border: 1px solid #ffdada; }
+        
+        .card-acoes { position: absolute; top: 8px; right: 8px; display: flex; gap: 8px; }
+        .card-acoes i { cursor: pointer; font-size: 16px; }
+        .fa-pencil-alt { color: var(--primary); }
+        .fa-trash { color: var(--danger); }
+        .fa-undo { color: var(--success); }
+        .fa-whatsapp { color: #25d366; }
+        .fa-copy { color: var(--warning); }
+        .fa-history { color: var(--dark); }
 
-        .modal-title {
-            color: #0d3b66;
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #f0f4f8;
-            padding-bottom: 10px;
-        }
+        .btn-enviar-form { width: 100%; background: var(--success); color: white; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 5px; cursor: pointer; font-size: 12px; }
+        .btn-pendente { width: 100%; background: var(--warning); color: #000; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 12px; }
+        .btn-cadastrado { width: 100%; background: var(--primary); color: white; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 12px; }
+        .btn-excluir-planilha { width: 100%; background: var(--danger); color: white; border: none; padding: 8px; border-radius: 5px; font-weight: bold; margin-top: 5px; cursor: pointer; font-size: 12px; }
 
-        .modal-body {
-            margin-bottom: 20px;
-            font-size: 15px;
-        }
+        .backup-section { max-width: 500px; margin: 20px auto; display: flex; flex-direction: column; gap: 10px; }
+        .btn-backup { flex: 1; background: var(--bg-card); border: 1px dashed var(--gray); color: var(--gray); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 11px; }
+        .btn-importar-sheet { background: #007bff !important; color: white !important; border: none !important; font-weight: bold; text-transform: uppercase; }
 
-        .modal-body p {
-            margin-bottom: 10px;
-        }
+        #container-instalacao { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: white; border: 2px solid var(--primary); border-radius: 15px; padding: 15px; z-index: 10001; box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; }
+        .botoes-pwa { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-pwa { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-green { background: var(--success); color: white; }
+        .btn-vermelho { background: var(--danger); color: white; }
 
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
+        /* ESTILO PARA CAMUFLAGEM */
+        .ocultar-info .info-sensivel { display: none !important; }
+        .fa-eye-slash { color: var(--gray); }
 
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #333;
-        }
+        /* OPÇÃO 3: TEMPLATES WHATSAPP STYLES */
+        .config-section { max-width: 500px; margin: 20px auto; background: var(--bg-card); padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .config-section textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; background: var(--bg-body); color: var(--text-main); font-size: 12px; height: 60px; }
 
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 15px;
-        }
+        /* HISTORICO LIST STYLE */
+        .hist-item { font-size: 10px; border-bottom: 1px solid #eee; padding: 5px 0; color: var(--gray); }
 
-        .numeros-escolhidos {
-            background: #faf8f5;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #e6dfd3;
-            font-weight: bold;
-            color: #cc0000;
-            letter-spacing: 1px;
-            word-wrap: break-word;
-        }
-
-        .valor-total {
-            font-size: 18px;
-            font-weight: bold;
-            color: #008060;
-            margin-top: 15px;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .btn-modal {
-            padding: 10px 20px;
-            font-size: 15px;
-            font-weight: bold;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .btn-voltar {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .btn-voltar:hover {
-            background: #d5d5d5;
-        }
-
-        .btn-salvar {
-            background: #0d3b66;
-            color: #fff;
-        }
-
-        .btn-salvar:hover {
-            background: #092c4e;
-        }
-
-        .btn-excluir {
-            background: #cc0000;
-            color: #fff;
-            margin-right: auto;
-        }
-
-        .btn-excluir:hover {
-            background: #a30000;
-        }
-
-        .btn-pagar {
-            background: #008060;
-            color: #fff;
-        }
-
-        .btn-pagar:hover {
-            background: #00664d;
-        }
-
-        .btn-copiar-pix {
-            background: #d1a153;
-            color: #fff;
-        }
-
-        .btn-copiar-pix:hover {
-            background: #b58941;
-        }
-
-        /* Ajustes Responsivos */
-        @media (max-width: 600px) {
-            .numeros-grid {
-                grid-template-columns: repeat(5, 1fr);
-                gap: 6px;
-            }
-            .num-btn {
-                padding: 8px 0;
-                font-size: 14px;
-            }
-            h1 { font-size: 22px; }
-            h2 { font-size: 18px; }
-        }
-
-        .Rodape-seguro {
-            display: inline-flex;
-            align-items: center;
-            background-color: #e6f4ea;
-            color: #137333;
-            padding: 6px 16px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .Rodape-seguro::before {
-            content: "🔒";
-            margin-right: 6px;
+        @media (min-width: 600px) {
+            .nav-buttons { grid-template-columns: 1fr 1fr 1fr; max-width: 900px; }
+            .grid-cards { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>SORTEIO BENEFICENTE</h1>
-            <h2>EM PROL DE AJUDAR NOSSO AMIGO 
-                <br><strong style="color: red;">Danilo</strong></h2>
-            <div class="subtitle">APÓS UM ACIDENTE DE MOTO</div>
-            
-        </header>
-
-        <section class="premios-container">
-            <div class="premio-card">
-                <span class="badge">1º PRÊMIO</span>
-                <div class="premio-titulo">Sanduicheira</div>
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsVsd5XIO_-JS1kdHsSVz1ZA-ChAGmh3iG5g0S4wcEe9-aVzCBKpTvZAE&s=10" alt="Sanduicheira Mondial" class="premio-img">
-                <p>imagem ilustrativa</p>
-            </div>
-
-            <div class="premio-card">
-                <span class="badge">2º PRÊMIO</span>
-                <div class="premio-titulo">Chaleira Elétrica</div>
-                <img src="https://a-static.mlcdn.com.br/470x352/chaleira-eletrica-cadence-cel821-inox-e-preto-18l/magazineluiza/238873300/5909c15474ca8386e64c00ce51033ca2.jpg" alt="Chaleira Elétrica" class="premio-img">
-                <p>imagem ilustrativa</p>
-            </div>
-
-            <div class="premio-card">
-                <span class="badge">3º PRÊMIO</span>
-                <div class="premio-titulo premio-pix">R$ 50,00 VIA PIX</div>
-                <div class="premio-detalhe">PIX no valor de Cinquenta Reais</div>
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXI-s7W3gQDzD1N_CxUs80kL4xKUnt-PxHfqiARsTGz8zVZvlDVU0sPP0&s=10" alt="Prêmio PIX" class="premio-img">
-                <p>imagem ilustrativa</p>
-            </div>
-        </section>
-
-        <section class="grid-container">
-            <div class="grid-title" id="txtGridTitulo">Selecione os seus números abaixo:</div>
-            <div class="numeros-grid" id="gridNumeros">
-            </div>
-        </section>
-
-        <section class="info-rifa">
-            <p class="valor-destaque">VALOR DA RIFA: R$ 15,00 <span style="font-size: 14px; color: #555; font-weight: normal;">(por número)</span></p>
-            <p><strong>DATA DO SORTEIO:</strong><br>
-            Quando todos os números forem preenchidos</p>
-            <p><strong>Selecionou seu Número(s)?</strong><br>
-                
-            <span style="color: Red;">
-            <strong>PRÓXIMO PASSO</strong><br>
-                Clique no Botão<br>
-            <strong>👇</strong>
-            </span>
-            </p>
-        </section>
-
-        <div class="acao-container">
-            <button class="btn-proximo" id="btnProximo">Próximo Passo</button>
-            <p style="color: #919191"> 
-               <steong style="font-size: 17px; color: #eb3a34">🤍 Mensagem de Agradecimento 🤍</steong><br>
-Gostaríamos de expressar a nossa mais profunda e sincera gratidão a 
-cada um de vocês que reservou um momento para comprar um número do 
-nosso sorteio e estender a mão ao Danilo neste momento tão delicado.            
-Quando o acidente de moto aconteceu, o nosso coração se encheu de preocupação, 
-mas ver a mobilização, a empatia e a generosidade de tantos amigos, familiares e 
-até mesmo de pessoas que nem o conheciam pessoalmente, nos devolveu a força e a 
-certeza de que ele não está sozinho nessa jornada de recuperação.<br>
-                
-Cada contribuição de vocês foi muito além do valor financeiro; foi um abraço 
-caloroso, uma dose de esperança e um combustível essencial para que o 
-Danilo e sua família possam focar no que realmente importa agora: a sua 
-reabilitação e o seu pronto restabelecimento. Vocês provaram que a solidariedade 
-é uma força poderosa capaz de transformar a dor em união. Que toda essa bondade e 
-carinho que vocês plantaram retorne em dobro, com muita saúde, paz e bênçãos na vida de 
-cada um. Muito obrigado por fazerem a diferença e por caminharem conosco pelo bem do Danilo! 
-            </p>
-
-            <hr style="margin: 20px;"><br>
-            <h2 style="color: red;">ATENÇÃO</h2>
-            <p style="font-size: 20px; color: #919191;">
-            Clique no botão VER para mais informações sobre como será o sorteio.<br>👇
-            </p>
-                <a href="Sorteio.html" class="btn-proximo" style="text-decoration: none; display: inline-block; text-align: center;">
-                VER</a>
-            
-            <div style="color: #919191;">
-            <p style="font-size: 20px; color: red!">Organizadores do Sorteio:<p><br>
-            <p>Desenvolvido: Criador do site:<br> 
-            Mayckon Jhonatas<br>
-            <strong>CONTATO</strong>: <a href="https://wa.me/5562995679219" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background-color: #d4edda; color: #155724; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-family: sans-serif; font-size: 14px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.966C16.528 1.975 14.067 1.04 11.5 1.04c-5.438 0-9.863 4.374-9.867 9.806-.001 1.73.457 3.417 1.32 4.916l-.989 3.612 3.683-.966zM18.21 15.33c-.334-.167-1.977-.975-2.28-1.085-.304-.112-.525-.167-.746.167-.221.334-.856 1.085-1.049 1.307-.193.222-.387.251-.722.083-1.127-.565-2.203-1.043-3.056-2.511-.242-.416.242-.387.693-1.287.075-.15.038-.282-.019-.393-.056-.112-.525-1.265-.72-1.736-.19-.459-.383-.396-.525-.403-.135-.007-.29-.009-.444-.009-.155 0-.407.058-.621.288-.213.23-.814.796-.814 1.942 0 1.146.833 2.251.949 2.408.117.156 1.64 2.506 3.976 3.512.556.24 1.0.383 1.34.492.559.178 1.067.153 1.47.093.449-.067 1.47-.6 1.674-1.18.204-.58.204-1.079.143-1.18-.061-.101-.227-.168-.561-.335z"/>
-                </svg>
-                62 995679219
-            </a>
-            </p><hr>
-                
-            <p>Administração Financeira:<br>
-            Dalton dos Reis Silva<br>
-            <strong>CONTATO</strong>: <a href="https://wa.me/5562981147479" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background-color: #d4edda; color: #155724; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-family: sans-serif; font-size: 14px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.966C16.528 1.975 14.067 1.04 11.5 1.04c-5.438 0-9.863 4.374-9.867 9.806-.001 1.73.457 3.417 1.32 4.916l-.989 3.612 3.683-.966zM18.21 15.33c-.334-.167-1.977-.975-2.28-1.085-.304-.112-.525-.167-.746.167-.221.334-.856 1.085-1.049 1.307-.193.222-.387.251-.722.083-1.127-.565-2.203-1.043-3.056-2.511-.242-.416.242-.387.693-1.287.075-.15.038-.282-.019-.393-.056-.112-.525-1.265-.72-1.736-.19-.459-.383-.396-.525-.403-.135-.007-.29-.009-.444-.009-.155 0-.407.058-.621.288-.213.23-.814.796-.814 1.942 0 1.146.833 2.251.949 2.408.117.156 1.64 2.506 3.976 3.512.556.24 1.0.383 1.34.492.559.178 1.067.153 1.47.093.449-.067 1.47-.6 1.674-1.18.204-.58.204-1.079.143-1.18-.061-.101-.227-.168-.561-.335z"/>
-                </svg>
-                62 98114-7479
-            </a>
-            </p><hr>
-
-            <p>Beneficiário do Acidente:<br>
-            Danilo...<br>
-            <strong>CONTATO</strong>: <a href="https://wa.me/5591986208487" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background-color: #d4edda; color: #155724; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-family: sans-serif; font-size: 14px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.966C16.528 1.975 14.067 1.04 11.5 1.04c-5.438 0-9.863 4.374-9.867 9.806-.001 1.73.457 3.417 1.32 4.916l-.989 3.612 3.683-.966zM18.21 15.33c-.334-.167-1.977-.975-2.28-1.085-.304-.112-.525-.167-.746.167-.221.334-.856 1.085-1.049 1.307-.193.222-.387.251-.722.083-1.127-.565-2.203-1.043-3.056-2.511-.242-.416.242-.387.693-1.287.075-.15.038-.282-.019-.393-.056-.112-.525-1.265-.72-1.736-.19-.459-.383-.396-.525-.403-.135-.007-.29-.009-.444-.009-.155 0-.407.058-.621.288-.213.23-.814.796-.814 1.942 0 1.146.833 2.251.949 2.408.117.156 1.64 2.506 3.976 3.512.556.24 1.0.383 1.34.492.559.178 1.067.153 1.47.093.449-.067 1.47-.6 1.674-1.18.204-.58.204-1.079.143-1.18-.061-.101-.227-.168-.561-.335z"/>
-                </svg>
-                91 98620-8487
-            </a>
-            </p>
-            </div>
-            <dev>
-      <p class="Rodape-seguro">🔒 AMBIENTE 100% SEGURO</p>
-                <p>|</p>
-                <p>|</p>
-                <p>|</p>
-                <p>↓</p>
-                <dev style="color: #a0a3a3;">
-                <span>Criador do Site:</span><br>
-                <a href="https://wa.me/5562995679219"><button style="
-    position: relative;
-    padding: 16px 40px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #ffffff;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    background: linear-gradient(90deg, #25d366, #128c7e, #075e54, #25d366);
-    background-size: 400%;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-" 
-onmouseover="this.style.transform='scale(1.05)'" 
-onmouseout="this.style.transform='scale(1)'" 
-onmousedown="this.style.transform='scale(0.98)'" 
-onmouseup="this.style.transform='scale(1.05)'">
-    Quero Criar Meu Site
-</button></a><br>
-            </dev>
-            
-            <div class="admin-botoes-grupo">
-                <a href="Salvo.html">
-                <button class="btn-admin" style="margin: 20px; text-decoration: none;;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    Admin
-                </button>
-                </a>
-                <hr style="font-size: 7px;">
-                <br>
-                <p>.</p>
-
-                
-                <button style="font-size: 7px;" class="btn-admin" id="btnAdmin">
-                -
-                </button>
-                    
-                <button class="btn-admin btn-backup" id="btnBackup" style="display: none;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4M7 10l5 5 5-5M12 15V3"/></svg>
-                    Backup
-                </button>
-                <button class="btn-admin btn-backup" id="btnUpload" style="display: none;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                    Upload
-                </button>
-                <input type="file" id="fileUploadInput" accept=".json" style="display: none;">
-            </div>
-        </div>
-
-    <!-- Modal Cadastro / Admin -->
-    <div class="modal-overlay" id="modalCadastro">
-        <div class="modal-content">
-            <div class="modal-title" id="modalCadastroTitulo">Dados do Comprador - Número <span id="numSelecionadoTitulo">0</span></div>
-            <div class="modal-body">
-                <div class="form-group" id="grupoNumeroAdmin" style="display: none;">
-                    <label for="numeroAdminInput">Número da Rifa:</label>
-                    <input type="number" id="numeroAdminInput" min="1" max="100" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="nomeCliente">Nome Completo:</label>
-                    <input type="text" id="nomeCliente" placeholder="Digite seu nome">
-                </div>
-                <div class="form-group">
-                    <label for="whatsappCliente">WhatsApp / Informação:</label>
-                    <input type="text" id="whatsappCliente" placeholder="(00) 00000-0000">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-modal btn-excluir" id="btnExcluirAdmin" style="display: none;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                    Excluir
-                </button>
-                <button class="btn-modal btn-voltar" id="btnCancelarCadastro">Cancelar</button>
-                <button class="btn-modal btn-salvar" id="btnSalvarCadastro">
-                    <span id="txtIconeSalvar"></span> Confirmar Número
-                </button>
-            </div>
+    <div id="container-instalacao">
+        <h3>Instalar Albatroz</h3>
+        <p>Deseja instalar este sistema como um aplicativo no seu celular?</p>
+        <div class="botoes-pwa">
+            <button id="btnInstalarApp" class="btn-pwa btn-green">INSTALAR</button>
+            <button id="btnRecusarApp" class="btn-pwa btn-vermelho">AGORA NÃO</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="modalConfirmacao">
-        <div class="modal-content">
-            <div class="modal-title">Confirmação de Reserva</div>
-            <div class="modal-body">
-                <p>Você selecionou os seguintes números:</p>
-                <div class="numeros-escolhidos" id="modalNumeros">--</div>
-                <div class="valor-total" id="modalTotal">Total: R$ 0,00</div>
-                <p style="margin-top: 15px; font-size: 13px; color: #666;">
-                    Chave Pix da Administração:<br>
-                    <strong style="color: red;">62 981147479</strong><br>
-                    Nome:<br>
-                    <strong style="color: #FF3F1A;">Dalton dos Reis Silva</strong><br>
-                </p>
+    <div id="login-screen">
+        <div class="login-box">
+            <div style="color: var(--primary); font-size: 20px; margin-bottom: -5px;">
+            <button class="btn-unlock" onclick="validarAcessoPainel()" title="Entrar">
+                <i class="fas fa-lock"></i>
+            </button>
+            <input type="text" id="authID" placeholder="">
+            <input type="password" id="authSenha" placeholder="Clique no botão abaixo:">
+            
+            <div id="erroAuth" class="error-msg">Dados inválidos</div>
+        </div>
+
+        <p style="margin-top: -5px; color: var(--gray); font-weight: bold; max-width: 320px; font-size: 14px;">
+          Esse Cadastro serve para liberar o acesso total do seu site</p>
+          <div style="
+    max-width: 500px; 
+    margin: 20px auto; 
+    background: #ffffff; 
+    padding: 20px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    border: 1px solid rgba(0, 123, 255, 0.1);
+">
+    <h3 style="
+        margin-top: 0; 
+        margin-bottom: 15px; 
+        color: #007bff; 
+        font-size: 16px; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    ">
+        <i class="fas fa-shield-alt"></i> Níveis de Acesso do Sistema
+    </h3>
+    
+    <p style="
+        font-size: 13px; 
+        color: #7f8c8d; 
+        margin-bottom: 15px; 
+        line-height: 1.4;
+    ">
+        Este cadastro realiza a liberação das credenciais de segurança necessárias para gerenciar as seguintes funções restritas do seu site, como:
+    </p>
+
+    <ul style="
+        list-style: none; 
+        padding: 0; 
+        margin: 0; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 10px;
+    ">
+        <li style="
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 14px; 
+            color: #333333; 
+            background: #f8f9fa; 
+            padding: 10px 12px; 
+            border-radius: 8px;
+            border-left: 4px solid #2ecc71;
+        ">
+            <i class="fas fa-ticket-alt" style="color: #2ecc71; width: 16px; text-align: center;"></i>
+            <span>Módulo de <strong>REALIZAR SORTEIO</strong> ativado</span>
+        </li>
+        
+        <li style="
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 14px; 
+            color: #333333; 
+            background: #f8f9fa; 
+            padding: 10px 12px; 
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        ">
+            <i class="fas fa-user-shield" style="color: #007bff; width: 16px; text-align: center;"></i>
+            <span>Privilégios de <strong>ADMINISTRADOR (Admin)</strong></span>
+        </li>
+        
+        <li style="
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 14px; 
+            color: #333333; 
+            background: #f8f9fa; 
+            padding: 10px 12px; 
+            border-radius: 8px;
+            border-left: 4px solid #f1c40f;
+        ">
+            <i class="fas fa-edit" style="color: #f1c40f; width: 16px; text-align: center;"></i>
+            <span>Permissão para <strong>EDITAR SITE</strong> em tempo real</span>
+        </li>
+    </ul>
+</div>
+           <button class="btn-login-cadastro" onclick="window.open('Cadastro.html', '_blank')">
+            REALIZAR CADASTRO
+        </button>
+
+    </div>
+
+    <div id="app-content">
+        <div class="header-app">
+            <button class="btn-voltar" onclick="voltarParaLogin()">
+                <i class="fas fa-arrow-left"></i> SAIR / VOLTAR
+            </button>
+            <button class="btn-theme" onclick="toggleDarkMode()"><i class="fas fa-moon"></i></button>
+        </div>
+
+        <div class="stats-container" id="stats-area" style="max-width: 500px; margin: 0 auto 10px auto;">
+            <small style="color: var(--gray); font-weight: bold;">SAÚDE DO SISTEMA</small>
+            <div class="bar-chart">
+                <div id="bar-ativos" class="bar-segment" style="background: var(--primary); width: 0%;"></div>
+                <div id="bar-vencendo" class="bar-segment" style="background: var(--danger); width: 0%;"></div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-modal btn-voltar" id="btnVoltar">Voltar</button>
-             <!--   <button class="btn-modal btn-copiar-pix" id="btnCopiarPix">Copiar PIX</button>-->
-                <button class="btn-modal btn-pagar" id="btnPagar">Copiar PIX</button>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold;">
+                <span style="color: var(--primary);">Ativos: <span id="perc-ativos">0</span>%</span>
+                <span style="color: var(--danger);">Vencendo: <span id="perc-vencendo">0</span>%</span>
             </div>
+        </div>
+
+        <div class="dashboard" onclick="renderizar()">
+            <div class="dash-item"><small>Ativos</small><b id="count-ativos">0</b></div>
+            <div class="dash-item"><small>Vencendo</small><b id="count-fim">0</b></div>
+            <div class="dash-item"><small>Total</small><b id="count-total">0</b></div>
+        </div>
+
+        <div class="cadastro-container">
+            <h2 style="font-size: 18px; margin-bottom: 15px;"><i class="fas fa-id-card"></i> Novo Cadastro</h2>
+            <div class="grid-form">
+                <input type="text" id="nome" placeholder="Nome Completo">
+                <input type="email" id="email" placeholder="E-mail">
+                <input type="tel" id="contato" placeholder="WhatsApp" maxlength="15" oninput="maskZap(this)">
+                <input type="text" id="cpf" placeholder="CPF" maxlength="14" oninput="maskCPF(this)">
+                <input type="text" id="id_acesso" placeholder="ID de Acesso">
+                <input type="text" id="senha_acesso" placeholder="Senha de Acesso">
+                <label style="font-size: 12px; color: #666; margin-bottom: -5px;">Data e Hora de Expiração:</label>
+                <input type="datetime-local" id="validade">
+                <input type="text" id="foto_url" placeholder="URL do Link da Foto">
+                <input type="text" id="id_planilha_field" placeholder="ID Planilha (Entry 43896517)">
+                <button onclick="processarCadastro()" id="btn-main" class="btn-salvar">FINALIZAR CADASTRO</button>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn-modal" id="btn-ativos" onclick="abrirModal('modal-ativos')">Ativos</button>
+            <button class="btn-modal" id="btn-fim" onclick="abrirModal('modal-fim')">Vencendo</button>
+            <button class="btn-modal" id="btn-excluidos" onclick="abrirModal('modal-excluidos')">Lixeira</button>
+        </div>
+
+        <div class="backup-section">
+            <button class="btn-backup btn-importar-sheet" onclick="abrirModal('modal-planilha')"><i class="fas fa-table"></i> PLANILHA</button>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button class="btn-backup" onclick="exportarDados()"><i class="fas fa-download"></i> Baixar Backup</button>
+                <button class="btn-backup" onclick="document.getElementById('file-import').click()"><i class="fas fa-upload"></i> Restaurar Backup</button>
+            </div>
+            <input type="file" id="file-import" style="display: none;" accept=".json" onchange="importarDados(this)">
+        </div>
+
+        <div class="config-section">
+            <h4 style="margin: 0 0 10px 0; font-size: 14px;"><i class="fab fa-whatsapp"></i> Mensagem Padrão</h4>
+            <textarea id="wp_template" onchange="salvarTemplate()">Olá [NOME], sua assinatura vence em breve!</textarea>
+            <small style="font-size: 9px; color: var(--gray);">Use [NOME] para personalizar.</small>
+        </div>
+
+        <div id="modal-planilha" class="modal">
+            <div class="modal-header"><h3>Sincronização da Planilha</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+            <div style="text-align: center; margin-bottom: 15px;"><button onclick="carregarDadosPlanilha()" class="btn-salvar" style="width: auto; padding: 10px 20px; background: var(--primary);">CARREGAR DADOS ATUAIS</button></div>
+            <div id="grid-planilha" class="grid-cards"></div>
+        </div>
+
+        <div id="modal-ativos" class="modal">
+            <div class="modal-header"><h3>Ativos</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+            <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar por nome ou CPF..." onkeyup="filtrarCards(this, 'grid-ativos')"></div>
+            <div id="grid-ativos" class="grid-cards"></div>
+        </div>
+
+        <div id="modal-fim" class="modal">
+            <div class="modal-header"><h3>Vencendo</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+            <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar por nome ou CPF..." onkeyup="filtrarCards(this, 'grid-fim')"></div>
+            <div id="grid-fim" class="grid-cards"></div>
+        </div>
+
+        <div id="modal-excluidos" class="modal">
+            <div class="modal-header">
+                <h3>Lixeira</h3> 
+                <button class="btn-fechar" onclick="esvaziarLixeira()" style="background: var(--dark); margin-right: 10px;">ESVAZIAR LIXEIRA</button>
+                <button class="btn-fechar" onclick="fecharModais()">Sair</button>
+            </div>
+            <div class="search-container"><input type="text" class="search-input" placeholder="🔍 Buscar na lixeira..." onkeyup="filtrarCards(this, 'grid-excluidos')"></div>
+            <div id="grid-excluidos" class="grid-cards"></div>
+        </div>
+
+        <div id="modal-historico" class="modal">
+            <div class="modal-header"><h3>Histórico de Renovação</h3> <button class="btn-fechar" onclick="fecharModais()">Sair</button></div>
+            <div id="lista-historico" style="background: var(--bg-card); padding: 15px; border-radius: 12px;"></div>
         </div>
     </div>
 
     <script>
-        // Estrutura para armazenar os dados dos compradores por número
-        let reservas = JSON.parse(localStorage.getItem('rifa_reservas')) || {};
-        // Guarda os dados do primeiro cadastro de forma fixa no dispositivo
-        let dadosComprador = JSON.parse(localStorage.getItem('rifa_dados_comprador')) || null;
-        
-        // Estrutura do Painel Administrativo local
-        let reservasAdmin = JSON.parse(localStorage.getItem('rifa_reservas_admin')) || {};
-        let modoAdminAtivo = false;
+        let clientes = JSON.parse(localStorage.getItem('db_spook_v4')) || [];
+        let idEdicao = null;
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVGJyIuUPbsSl0S9L51uAijnNMmscOkVz_8taWHyx2yd6i-C7MmANPsID4bihanjGel4peUR4kxsE-/pub?output=csv';
 
-        const valorPorNumero = 15.00;
-        let numeroSendoEditado = null;
+        // CARREGA TEMPLATE SALVO (OPÇÃO 3)
+        document.getElementById('wp_template').value = localStorage.getItem('albatroz_wp_msg') || "Olá [NOME], sua assinatura vence em breve!";
 
-        // Lista de números que já foram vendidos e confirmados por você na planilha diretamente
-        let numerosVendidosPlanilha = [];
-
-        // ==========================================
-        // TABELA DE LINKS DE PAGAMENTO POR VALOR TOTAL
-        // ==========================================
-        const LINKS_PAGAMENTO = {
-            "15.00": "62 981147479", //1x15
-            "30.00": "62981147479", //2x15
-            "45.00": "62981147479", //3x15
-            "60.00": "62981147479", //4x15
-            "75.00": "62981147479", //5x15
-            "90.00": "62981147479", //6x15
-            "105.00": "62 981147479", //7x15
-            "120.00": "62 981147479", //8x15
-            "135.00": "62 981147479", //9x15
-            "150.00": "62 981147479"  //10x15
+        // SINCRONIZANDO COM INDEXEDDB PARA SEGURANÇA (OPÇÃO 4)
+        const dbRequest = indexedDB.open("AlbatrozDB", 1);
+        dbRequest.onupgradeneeded = (e) => { e.target.result.createObjectStore("clientes", { keyPath: "id" }); };
+        dbRequest.onsuccess = (e) => {
+             const db = e.target.result;
+             const transaction = db.transaction("clientes", "readonly");
+             const store = transaction.objectStore("clientes");
+             store.getAll().onsuccess = (ev) => {
+                 if(ev.target.result.length > clientes.length) {
+                     clientes = ev.target.result;
+                     renderizar();
+                 }
+             };
         };
 
-        // Link CSV de publicação da sua planilha que você informou
-        const SPREADSHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTGNnX2CNboGVogFtJhwq17hgCBbxkcOImJi9CMtxqKHrlH7M9QCjYCbeTh6wvLK4-YopHFiWr7GraH/pub?output=csv";
-
-        // Elementos da interface
-        const gridNumeros = document.getElementById('gridNumeros');
-        const btnProximo = document.getElementById('btnProximo');
-        const btnAdmin = document.getElementById('btnAdmin');
-        const btnBackup = document.getElementById('btnBackup');
-        const btnUpload = document.getElementById('btnUpload');
-        const fileUploadInput = document.getElementById('fileUploadInput');
-        const txtGridTitulo = document.getElementById('txtGridTitulo');
-        
-        // Modal Cadastro
-        const modalCadastro = document.getElementById('modalCadastro');
-        const modalCadastroTitulo = document.getElementById('modalCadastroTitulo');
-        const numSelecionadoTitulo = document.getElementById('numSelecionadoTitulo');
-        const grupoNumeroAdmin = document.getElementById('grupoNumeroAdmin');
-        const numeroAdminInput = document.getElementById('numeroAdminInput');
-        const nomeCliente = document.getElementById('nomeCliente');
-        const whatsappCliente = document.getElementById('whatsappCliente');
-        const btnCancelarCadastro = document.getElementById('btnCancelarCadastro');
-        const btnSalvarCadastro = document.getElementById('btnSalvarCadastro');
-        const btnExcluirAdmin = document.getElementById('btnExcluirAdmin');
-        const txtIconeSalvar = document.getElementById('txtIconeSalvar');
-
-        // Modal Confirmação
-        const modalConfirmacao = document.getElementById('modalConfirmacao');
-        const modalNumeros = document.getElementById('modalNumeros');
-        const modalTotal = document.getElementById('modalTotal');
-        const btnVoltar = document.getElementById('btnVoltar');
-        const btnCopiarPix = document.getElementById('btnCopiarPix');
-        const btnPagar = document.getElementById('btnPagar');
-
-        // Função para ler os dados vindos diretamente do link CSV da planilha
-        function carregarDadosDaPlanilha() {
-            fetch(SPREADSHEET_CSV_URL)
-            .then(response => response.text())
-            .then(data => {
-                let linhas = data.split('\n');
-                numerosVendidosPlanilha = [];
-
-                // Passa por cada linha da planilha para verificar o conteúdo da Coluna A
-                linhas.forEach((linha, index) => {
-                    let colunas = lineSplit(linha);
-                    if (colunas.length >= 1) {
-                        let conteudoColunaA = colunas[0].trim();
-                        let numeroRifaOcupado = index + 1;
-
-                        if (conteudoColunaA !== "") {
-                            numerosVendidosPlanilha.push(numeroRifaOcupado);
-                        }
-                    }
-                });
-
-                gerarGrid();
-            })
-            .catch(error => {
-                console.error("Erro ao ler dados da planilha publicado em CSV:", error);
-                gerarGrid();
-            });
+        function salvarDBInterno(dados) {
+            const dbRequest = indexedDB.open("AlbatrozDB", 1);
+            dbRequest.onsuccess = (e) => {
+                const db = e.target.result;
+                const transaction = db.transaction("clientes", "readwrite");
+                const store = transaction.objectStore("clientes");
+                store.put(dados);
+            };
         }
 
-        // Função auxiliar robusta para separar colunas de CSV tratando aspas
-        function lineSplit(text) {
-            let p = false, d = [];
-            let r = [''];
-            for (let i=0; i<text.length; i++) {
-                let c = text[i];
-                if (c === '"') { p = !p; }
-                else if (c === ',' && !p) { r.push(''); }
-                else { r[r.length-1] += c; }
+        // Atualização contínua do cronômetro mesmo com site fechado
+        setInterval(renderizar, 60000);
+
+        // 🔒 Sistema de Validação Segura via JSONP integrado perfeitamente ao Layout
+        function validarAcessoPainel() {
+            const usuarioInput = document.getElementById('authID').value.trim();
+            const senhaInput = document.getElementById('authSenha').value.trim();
+            const divErro = document.getElementById('erroAuth');
+
+            const urlBackend = "https://script.google.com/macros/s/AKfycbxnFPcHlGE0qldY0LBW1YEwRyyNt9Oeh_NqAXEnjM2srfwgvElum5JmfSYmPqP6NzhJZA/exec";
+
+            if (!usuarioInput || !senhaInput) {
+                if (divErro) divErro.style.display = 'block';
+                return;
             }
-            return r;
-        }
 
-        // Renderiza a visualização dos botões respeitando o modo ativo e as bases de dados
-        function gerarGrid() {
-            gridNumeros.innerHTML = "";
-
-            for (let i = 1; i <= 100; i++) {
-                const botao = document.createElement('button');
-                botao.classList.add('num-btn');
-                botao.innerText = i;
-                botao.type = 'button';
-                botao.id = `btn-num-${i}`;
-
-                // Se houver dados salvos no Admin Local para este respectivo número
-                const temDadosAdmin = reservasAdmin[i] && reservasAdmin[i].nome.trim() !== "" && reservasAdmin[i].whatsapp.trim() !== "";
+            // Criamos uma função global temporária para receber a resposta do Google
+            const nomeCallback = 'meuCallbackOuvinte_' + Math.round(Math.random() * 1000000);
+            
+            window[nomeCallback] = function(resultado) {
+                const telaBloqueio = document.getElementById('login-screen');
+                const appContent = document.getElementById('app-content');
                 
-                if (temDadosAdmin) {
-                    botao.classList.add('tem-dados');
-                }
-
-                if (modoAdminAtivo) {
-                    // Modo Admin: Todos os botões ficam acessíveis e interativos para clique
-                    if (reservas[i]) {
-                        botao.classList.add('selecionado');
-                    }
+                if (resultado && resultado.autorizado === true) {
+                    if (telaBloqueio) telaBloqueio.style.display = 'none';
+                    if (appContent) appContent.style.display = 'block';
+                    if (divErro) divErro.style.display = 'none';
+                    renderizar();
                 } else {
-                    // Modo Público: Se cadastrado no admin local com campos preenchidos, fica bloqueado e impossível clicar
-                    if (temDadosAdmin) {
-                        botao.classList.add('vendido');
-                        botao.disabled = true;
-                        gridNumeros.appendChild(botao);
-                        if (reservas[i]) {
-                            delete reservas[i];
-                            localStorage.setItem('rifa_reservas', JSON.stringify(reservas));
-                        }
-                        continue;
-                    }
-
-                    // Se constar como ocupado na planilha externa do Google Docs
-                    if (numerosVendidosPlanilha.includes(i)) {
-                        botao.classList.add('vendido');
-                        botao.disabled = true;
-                        gridNumeros.appendChild(botao);
-                        if (reservas[i]) {
-                            delete reservas[i];
-                            localStorage.setItem('rifa_reservas', JSON.stringify(reservas));
-                        }
-                        continue;
-                    }
-
-                    if (reservas[i]) {
-                        botao.classList.add('selecionado');
-                    }
+                    if (divErro) divErro.style.display = 'block';
+                    document.getElementById('authSenha').value = '';
                 }
+                
+                // Limpeza de segurança após validar
+                document.body.removeChild(scriptElemento);
+                delete window[nomeCallback];
+            };
 
-                botao.addEventListener('click', function() {
-                    numeroSendoEditado = i;
-                    
-                    if (modoAdminAtivo) {
-                        // Painel Admin: Abre configuração para atribuir ou remover dados de vendas
-                        modalCadastroTitulo.innerHTML = `Admin — Configurar Número <span id="numSelecionadoTitulo">${i}</span>`;
-                        grupoNumeroAdmin.style.display = 'block';
-                        numeroAdminInput.value = i;
+            // Monta a requisição com os parâmetros e o callback de segurança
+            const parametros = `?usuario=${encodeURIComponent(usuarioInput)}&senha=${encodeURIComponent(senhaInput)}&callback=${nomeCallback}`;
+            
+            // Injeta o pedido de forma que o CORS permita a leitura da resposta
+            const scriptElemento = document.createElement('script');
+            scriptElemento.src = urlBackend + parametros;
+            
+            scriptElemento.onerror = function() {
+                alert("Erro de autenticação: Verifique sua conexão ou a configuração do script.");
+                if (divErro) divErro.style.display = 'block';
+                document.body.removeChild(scriptElemento);
+                delete window[nomeCallback];
+            };
+
+            document.body.appendChild(scriptElemento);
+        }
+
+        // Atalho para o botão Enter nos inputs de Login
+        document.getElementById('authSenha').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                validarAcessoPainel();
+            }
+        });
+
+        async function carregarDadosPlanilha() {
+            const grid = document.getElementById('grid-planilha');
+            grid.innerHTML = '<p style="text-align:center; width:100%;">Lendo Planilha...</p>';
+            try {
+                const res = await fetch(SHEET_URL);
+                const text = await res.text();
+                const rows = text.split(/\r?\n/);
+                const sep = rows[0].includes(';') ? ';' : ',';
+                const dados = rows.slice(1);
+                grid.innerHTML = '';
+                const letras = ['A','B','C','D','E','F','G','H','I','J','K'];
+                dados.forEach((line) => {
+                    const col = line.split(sep).map(item => item.replace(/^"|"$/g, '').trim());
+                    if (col.length > 1) {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        let conteudoHTML = `<h4>Registro: ${col[5] || 'Sem Nome'}</h4>`;
+                        for(let i = 0; i <= 10; i++) conteudoHTML += `<p><b>Coluna ${letras[i]}:</b> ${col[i] || '---'}</p>`;
                         
-                        // Se houver dados, o ícone de lápis entra em ação e libera o botão de exclusão
-                        txtIconeSalvar.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
-                        btnExcluirAdmin.style.display = temDadosAdmin ? 'inline-flex' : 'none';
-
-                        if (reservasAdmin[i]) {
-                            nomeCliente.value = reservasAdmin[i].nome;
-                            whatsappCliente.value = reservasAdmin[i].whatsapp;
+                        const statusColunaJ = (col[9] || "").toUpperCase();
+                        if (statusColunaJ === "ATIVADO") {
+                            conteudoHTML += `<button class="btn-cadastrado" onclick="toggleStatusPlanilha(this)">CADASTRADO</button>`;
                         } else {
-                            nomeCliente.value = '';
-                            whatsappCliente.value = '';
+                            conteudoHTML += `<button class="btn-pendente" onclick="toggleStatusPlanilha(this)">PENDENTE</button>`;
                         }
-                        modalCadastro.style.display = 'flex';
-                    } else {
-                        // Fluxo Normal do comprador
-                        if (reservas[i]) {
-                            delete reservas[i];
-                            localStorage.setItem('rifa_reservas', JSON.stringify(reservas));
-                            botao.classList.remove('selecionado');
-                        } else {
-                            modalCadastroTitulo.innerHTML = `Dados do Comprador - Número <span id="numSelecionadoTitulo">${i}</span>`;
-                            grupoNumeroAdmin.style.display = 'none';
-                            btnExcluirAdmin.style.display = 'none';
-                            txtIconeSalvar.innerHTML = '';
-                            numSelecionadoTitulo.innerText = i;
 
-                            if (dadosComprador) {
-                                nomeCliente.value = dadosComprador.nome;
-                                whatsappCliente.value = dadosComprador.whatsapp;
-                            } else {
-                                nomeCliente.value = '';
-                                whatsappCliente.value = '';
-                            }
-                            
-                            modalCadastro.style.display = 'flex';
-                        }
+                        conteudoHTML += `<button class="btn-enviar-form" onclick="enviarDadosParaForm('${line.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', '${sep}')">ENVIAR DADOS</button>`;
+                        
+                        card.innerHTML = conteudoHTML;
+                        grid.appendChild(card);
                     }
                 });
+            } catch (e) { grid.innerHTML = 'Erro ao carregar.'; }
+        }
 
-                gridNumeros.appendChild(botao);
+        function toggleStatusPlanilha(btn) {
+            if(btn.innerText === "CADASTRADO") {
+                btn.innerText = "PENDENTE";
+                btn.className = "btn-pendente";
+            } else {
+                btn.innerText = "CADASTRADO";
+                btn.className = "btn-cadastrado";
             }
         }
 
-        // Ação do Botão Admin com Validação de Senha
-        btnAdmin.addEventListener('click', function() {
-            if (modoAdminAtivo) {
-                modoAdminAtivo = false;
-                document.body.classList.remove('admin-mode');
-                txtGridTitulo.innerText = "Selecione os seus números abaixo:";
-                btnAdmin.style.background = "#6c757d";
-                btnAdmin.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin`;
-                btnBackup.style.display = 'none';
-                btnUpload.style.display = 'none';
-                gerarGrid();
-            } else {
-                const senha = prompt("Digite a senha do administrador:");
-                if (senha === "Rif@D") {
-                    modoAdminAtivo = true;
-                    document.body.classList.add('admin-mode');
-                    txtGridTitulo.innerText = "PAINEL ADMIN ATIVO — Clique em um número para Editar/Excluir";
-                    btnAdmin.style.background = "#008060";
-                    btnAdmin.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Sair do Admin`;
-                    btnBackup.style.display = 'inline-flex';
-                    btnUpload.style.display = 'inline-flex';
-                    gerarGrid();
-                } else if (senha !== null) {
-                    alert("Senha incorreta!");
+        function enviarDadosParaForm(linhaTexto, separador) {
+            const col = linhaTexto.split(separador).map(item => item.replace(/^"|"$/g, '').trim());
+            document.getElementById('nome').value = col[5] || "";
+            document.getElementById('email').value = col[1] || "";
+            document.getElementById('contato').value = col[8] || "";
+            document.getElementById('cpf').value = col[6] || "";
+            document.getElementById('id_acesso').value = col[7] || "";
+            document.getElementById('senha_acesso').value = col[2] || "";
+            document.getElementById('id_planilha_field').value = col[10] || ""; // Pega Coluna K
+            fecharModais();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            alert("Dados enviados!");
+        }
+
+        function processarCadastro() {
+            const nomeVal = document.getElementById('nome').value;
+            const emailVal = document.getElementById('email').value;
+            const contatoVal = document.getElementById('contato').value;
+            const cpfVal = document.getElementById('cpf').value;
+            const id_acessoVal = document.getElementById('id_acesso').value;
+            const senha_acessoVal = document.getElementById('senha_acesso').value;
+            const validadeVal = document.getElementById('validade').value;
+            const idPlanilhaVal = document.getElementById('id_planilha_field').value;
+            const fotoVal = document.getElementById('foto_url').value || 'https://www.w3schools.com/howto/img_avatar.png';
+            
+            if (!nomeVal || !validadeVal) return alert("Preencha Nome e Validade.");
+            
+            const expiraTime = new Date(validadeVal).getTime();
+            
+            const dados = {
+                nome: nomeVal,
+                email: emailVal,
+                contato: contatoVal,
+                cpf: cpfVal,
+                id_acesso: id_acessoVal,
+                senha_acesso: senha_acessoVal,
+                expira: expiraTime,
+                foto: fotoVal,
+                id_planilha: idPlanilhaVal,
+                status: 'ativo',
+                historico: [] 
+            };
+
+            const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScvNN2ww22ZPmF_WCp1pUdS3sxzgtCEpfNUHRlREF8cBAMp2g/formResponse";
+            const formData = new URLSearchParams();
+            
+            formData.append('entry.43896517', idPlanilhaVal);
+            formData.append('entry.1141684307', emailVal);
+            formData.append('entry.1324595610', senha_acessoVal);
+            formData.append('entry.629120708', id_acessoVal);
+            formData.append('entry.256625062', senha_acessoVal);
+            formData.append('entry.1234006123', nomeVal);
+            formData.append('entry.656246663', cpfVal);
+            formData.append('entry.1689283183', id_acessoVal);
+            formData.append('entry.694404201', contatoVal);
+            formData.append('entry.865836184', 'ATIVADO');
+
+            fetch(formURL, { method: 'POST', mode: 'no-cors', body: formData });
+
+            if (idEdicao) {
+                const idx = clientes.findIndex(c => c.id === idEdicao);
+                if(clientes[idx].expira !== expiraTime) {
+                    if(!clientes[idx].historico) clientes[idx].historico = [];
+                    clientes[idx].historico.unshift(new Date().toLocaleString());
+                    if(clientes[idx].historico.length > 5) clientes[idx].historico.pop();
                 }
+                clientes[idx] = { ...clientes[idx], ...dados, historico: clientes[idx].historico };
+                idEdicao = null;
+                document.getElementById('btn-main').innerText = "FINALIZAR CADASTRO";
+            } else {
+                clientes.push({ id: Date.now(), ...dados });
             }
-        });
+            
+            salvarEAtualizar(); 
+            limparForm();
+            alert("Cadastro realizado!");
+        }
 
-        // Backup dos dados do Admin para arquivo JSON
-        btnBackup.addEventListener('click', function() {
-            const dadosStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reservasAdmin, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dadosStr);
-            downloadAnchor.setAttribute("download", "backup_rifa_admin.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        });
+        function enviarExcluirPlanilha(idPlanilha) {
+            if(!idPlanilha) return alert("ID da planilha não encontrado neste card.");
+            if(!confirm("Deseja enviar comando de EXCLUSÃO para a planilha?")) return;
 
-        // Disparador do upload de arquivo JSON
-        btnUpload.addEventListener('click', function() {
-            fileUploadInput.click();
-        });
+            const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScvNN2ww22ZPmF_WCp1pUdS3sxzgtCEpfNUHRlREF8cBAMp2g/formResponse";
+            const formData = new URLSearchParams();
+            formData.append('entry.43896517', idPlanilha); 
+            formData.append('entry.865836184', 'EXCLUIR'); 
 
-        // Processa o upload do arquivo de backup
-        fileUploadInput.addEventListener('change', function(e) {
-            const arquivo = e.target.files[0];
-            if (!arquivo) return;
+            fetch(formURL, { method: 'POST', mode: 'no-cors', body: formData })
+            .then(() => alert("Comando de exclusão enviado para a planilha!"))
+            .catch(() => alert("Erro ao conectar."));
+        }
 
-            const leitor = new FileReader();
-            leitor.onload = function(event) {
+        function salvarEAtualizar() { 
+            localStorage.setItem('db_spook_v4', JSON.stringify(clientes)); 
+            clientes.forEach(c => salvarDBInterno(c)); 
+            renderizar(); 
+        }
+
+        function toggleCamuflagem(id) {
+            const card = event.target.closest('.card');
+            const icon = event.target;
+            card.classList.toggle('ocultar-info');
+            if(card.classList.contains('ocultar-info')) {
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function maskCPF(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            i.value = v;
+        }
+
+        function maskZap(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+            v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+            i.value = v;
+        }
+
+        function salvarTemplate() {
+            localStorage.setItem('albatroz_wp_msg', document.getElementById('wp_template').value);
+        }
+
+        function copiarAcesso(id) {
+            const c = clientes.find(cli => cli.id === id);
+            const texto = `*Dados de Acesso Albatroz:*\n👤 Nome: ${c.nome}\n🔑 ID: ${c.id_acesso || '---'}\n🔒 Senha: ${c.senha_acesso || '---'}\n📅 Vence em: ${new Date(c.expira).toLocaleDateString()}`;
+            navigator.clipboard.writeText(texto).then(() => alert("Dados copied!"));
+        }
+
+        function verHistorico(id) {
+            const c = clientes.find(cli => cli.id === id);
+            const lista = document.getElementById('lista-historico');
+            lista.innerHTML = `<h4>${c.nome}</h4>`;
+            if(!c.historico || c.historico.length === 0) {
+                lista.innerHTML += `<p style="font-size:12px;">Sem histórico de renovação.</p>`;
+            } else {
+                c.historico.forEach(h => {
+                    lista.innerHTML += `<div class="hist-item"><i class="fas fa-check-circle"></i> Renovado em: ${h}</div>`;
+                });
+            }
+            abrirModal('modal-historico');
+        }
+
+        function renderizar() {
+            const tA = document.getElementById('grid-ativos');
+            const tV = document.getElementById('grid-fim');
+            const tL = document.getElementById('grid-excluidos');
+            if(!tA) return;
+            tA.innerHTML = ''; tV.innerHTML = ''; tL.innerHTML = '';
+            let cA = 0, cV = 0;
+
+            clientes.forEach(c => {
+                const ms = c.expira - Date.now();
+                let p = c.status;
+                if (p === 'ativo' && (ms/3600000) < 8) { p = 'vencendo'; cV++; }
+                else if (p === 'ativo') cA++;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.setAttribute('data-search', (c.nome + c.cpf).toLowerCase());
+                
+                card.innerHTML = `
+                    <div class="card-acoes">
+                        ${p !== 'excluido' ? 
+                            `<i class="fas fa-eye" onclick="toggleCamuflagem(${c.id})"></i>
+                             <i class="fas fa-copy" onclick="copiarAcesso(${c.id})"></i>
+                             <i class="fas fa-history" onclick="verHistorico(${c.id})"></i>
+                             <i class="fab fa-whatsapp" onclick="enviarZap('${c.contato}', '${c.nome}')"></i>
+                             <i class="fas fa-pencil-alt" onclick="editar(${c.id})"></i>
+                             <i class="fas fa-trash" onclick="mudarStatus(${c.id}, 'excluido')"></i>` :
+                            `<i class="fas fa-trash" style="color:red;" onclick="excluirDefinitivo(${c.id})"></i>
+                             <i class="fas fa-undo" onclick="mudarStatus(${c.id}, 'ativo')"></i>`
+                        }
+                    </div>
+                    <img src="${c.foto}">
+                    <h4>${c.nome}</h4>
+                    <div class="info-sensivel">
+                        <p><i class="fas fa-envelope"></i> ${c.email || 'N/A'}</p>
+                        <p><i class="fab fa-whatsapp"></i> ${c.contato}</p>
+                        <p><i class="fas fa-fingerprint"></i> CPF: ${c.cpf}</p>
+                        <p><i class="fas fa-table"></i> ID Planilha: ${c.id_planilha || '---'}</p>
+                        <div class="card-acesso">
+                            <div>ID: ${c.id_acesso || '---'}</div>
+                            <div>Pass: ${c.senha_acesso || '---'}</div>
+                        </div>
+                    </div>
+                    <div class="timer">${calcCronometro(ms)}</div>
+                    ${p !== 'excluido' ? `<button class="btn-excluir-planilha info-sensivel" onclick="enviarExcluirPlanilha('${c.id_planilha}')">EXCLUIR NA PLANILHA</button>` : ''}
+                `;
+
+                if(p === 'ativo') tA.appendChild(card); 
+                else if(p === 'vencendo') tV.appendChild(card); 
+                else tL.appendChild(card);
+            });
+            
+            document.getElementById('count-ativos').innerText = cA;
+            document.getElementById('count-fim').innerText = cV;
+            document.getElementById('count-total').innerText = clientes.length;
+            document.getElementById('btn-fim').classList.toggle('alerta-vencendo', cV > 0);
+
+            const totalVisivel = cA + cV;
+            const pAtivos = totalVisivel > 0 ? Math.round((cA / totalVisivel) * 100) : 0;
+            const pVencendo = totalVisivel > 0 ? Math.round((cV / totalVisivel) * 100) : 0;
+            
+            document.getElementById('bar-ativos').style.width = pAtivos + "%";
+            document.getElementById('bar-vencendo').style.width = pVencendo + "%";
+            document.getElementById('perc-ativos').innerText = pAtivos;
+            document.getElementById('perc-vencendo').innerText = pVencendo;
+        }
+
+        function calcCronometro(ms) {
+            if (ms < 0) return "EXPIRADO";
+            const d = Math.floor(ms / 86400000);
+            const h = Math.floor((ms % 86400000) / 3600000);
+            const m = Math.floor((ms % 3600000) / 60000);
+            return `${d}d ${h}h ${m}m`;
+        }
+
+        function editar(id) {
+            const c = clientes.find(c => c.id === id);
+            document.getElementById('nome').value = c.nome;
+            document.getElementById('email').value = c.email || '';
+            document.getElementById('contato').value = c.contato;
+            document.getElementById('cpf').value = c.cpf;
+            document.getElementById('id_acesso').value = c.id_acesso || '';
+            document.getElementById('senha_acesso').value = c.senha_acesso || '';
+            document.getElementById('foto_url').value = c.foto || '';
+            document.getElementById('id_planilha_field').value = c.id_planilha || '';
+            const dt = new Date(c.expira);
+            dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+            document.getElementById('validade').value = dt.toISOString().slice(0,16);
+            idEdicao = id;
+            document.getElementById('btn-main').innerText = "ATUALIZAR CLIENTE";
+            fecharModais(); window.scrollTo(0,0);
+        }
+
+        function enviarZap(tel, nome) {
+            const num = tel.replace(/\D/g, '');
+            let msg = localStorage.getItem('albatroz_wp_msg') || "Olá [NOME]";
+            msg = msg.replace("[NOME]", nome);
+            window.open(`https://wa.me/55${num}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function filtrarCards(input, gridId) {
+            const termo = input.value.toLowerCase();
+            const cards = document.getElementById(gridId).getElementsByClassName('card');
+            Array.from(cards).forEach(card => card.style.display = card.getAttribute('data-search').includes(termo) ? 'block' : 'none');
+        }
+
+        function mudarStatus(id, status) { const i = clientes.findIndex(c => c.id === id); clientes[i].status = status; salvarEAtualizar(); }
+        
+        function excluirDefinitivo(id) {
+            if(confirm("Deseja excluir este registro permanentemente?")) {
+                clientes = clientes.filter(c => c.id !== id);
+                salvarEAtualizar();
+            }
+        }
+
+        function esvaziarLixeira() {
+            if(confirm("Deseja apagar TODOS os itens da lixeira permanentemente?")) {
+                clientes = clientes.filter(c => c.status !== 'excluido');
+                salvarEAtualizar();
+            }
+        }
+
+        function abrirModal(id) { document.getElementById(id).style.display = 'block'; document.body.style.overflow = 'hidden'; if(id === 'modal-planilha') carregarDadosPlanilha(); }
+        function fecharModais() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.body.style.overflow = 'auto'; }
+        function limparForm() { document.querySelectorAll('.grid-form input').forEach(i => i.value = ''); }
+        function voltarParaLogin() { document.getElementById('app-content').style.display = 'none'; document.getElementById('login-screen').style.display = 'flex'; }
+        
+        function exportarDados() { 
+            const blob = new Blob([JSON.stringify(clientes)], { type: 'application/json' }); 
+            const a = document.createElement('a'); 
+            a.href = URL.createObjectURL(blob); 
+            a.download = `backup_albatroz_${new Date().toLocaleDateString()}.json`; 
+            a.click(); 
+        }
+        function importarDados(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => { 
                 try {
-                    const dadosCarregados = JSON.parse(event.target.result);
-                    if (typeof dadosCarregados === 'object' && dadosCarregados !== null) {
-                        reservasAdmin = dadosCarregados;
-                        localStorage.setItem('rifa_reservas_admin', JSON.stringify(reservasAdmin));
-                        alert('Backup restaurado com sucesso!');
-                        gerarGrid();
-                    } else {
-                        alert('Formato de arquivo inválido.');
-                    }
+                    clientes = JSON.parse(e.target.result); 
+                    salvarEAtualizar(); 
+                    alert("Backup restaurado!"); 
                 } catch(err) {
-                    alert('Erro ao processar o arquivo JSON.');
+                    alert("Erro ao importar.");
                 }
             };
-            leitor.readAsText(arquivo);
-            fileUploadInput.value = ''; // Limpa o input
-        });
-
-        // Eventos do Modal de Cadastro
-        btnCancelarCadastro.addEventListener('click', function() {
-            modalCadastro.style.display = 'none';
-            numeroSendoEditado = null;
-        });
-
-        btnSalvarCadastro.addEventListener('click', function() {
-            const nome = nomeCliente.value.trim();
-            const whatsapp = whatsappCliente.value.trim();
-
-            if (!nome || !whatsapp) {
-                alert('Por favor, preencha todos os campos.');
-                return;
-            }
-
-            if (modoAdminAtivo) {
-                const novoNumero = parseInt(numeroAdminInput.value);
-                if (isNaN(novoNumero) || novoNumero < 1 || novoNumero > 100) {
-                    alert('Número inválido! Escolha de 1 a 100.');
-                    return;
-                }
-                
-                reservasAdmin[novoNumero] = { nome: nome, whatsapp: whatsapp };
-                localStorage.setItem('rifa_reservas_admin', JSON.stringify(reservasAdmin));
-            } else {
-                dadosComprador = { nome: nome, whatsapp: whatsapp };
-                localStorage.setItem('rifa_dados_comprador', JSON.stringify(dadosComprador));
-
-                reservas[numeroSendoEditado] = { nome: nome, whatsapp: whatsapp };
-                localStorage.setItem('rifa_reservas', JSON.stringify(reservas));
-            }
-            
-            modalCadastro.style.display = 'none';
-            numeroSendoEditado = null;
-            gerarGrid();
-        });
-
-        // Evento Excluir Reserva no Painel Admin (Ícone de lixeira)
-        btnExcluirAdmin.addEventListener('click', function() {
-            if (confirm(`Tem certeza que deseja apagar os dados do número ${numeroSendoEditado}?`)) {
-                if (reservasAdmin[numeroSendoEditado]) {
-                    delete reservasAdmin[numeroSendoEditado];
-                    localStorage.setItem('rifa_reservas_admin', JSON.stringify(reservasAdmin));
-                }
-                modalCadastro.style.display = 'none';
-                numeroSendoEditado = null;
-                gerarGrid();
-            }
-        });
-
-        // Ação do botão Próximo Passo
-        btnProximo.addEventListener('click', function() {
-            const numerosSelecionados = Object.keys(reservas).map(Number);
-
-            if (numerosSelecionados.length === 0) {
-                alert('Por favor, selecione e cadastre pelo menos um número.');
-                return;
-            }
-
-            numerosSelecionados.sort((a, b) => a - b);
-            modalNumeros.innerText = numerosSelecionados.join(', ');
-            
-            const total = numerosSelecionados.length * valorPorNumero;
-            modalTotal.innerText = `Total: R$ ${total.toFixed(2).replace('.', ',')}`;
-
-            modalConfirmacao.style.display = 'flex';
-        });
-
-        // Fechar Modal de Confirmação
-        btnVoltar.addEventListener('click', function() {
-            modalConfirmacao.style.display = 'none';
-        });
-
-        // Função interna para processar o envio do Whatsapp e cópia do pix
-        function finalizarEEnviar() {
-            navigator.clipboard.writeText("62981147479").catch(err => {
-                console.error("Erro ao copiar PIX automaticamente: ", err);
-            });
-
-            const numerosSelecionados = Object.keys(reservas).map(Number).sort((a, b) => a - b);
-            const total = numerosSelecionados.length * valorPorNumero;
-            const totalChave = total.toFixed(2);
-            
-            const linkPagamentoExato = LINKS_PAGAMENTO[totalChave] || "Link de pagamento não configurado para este valor.";
-
-            const primeiroNumero = numerosSelecionados[0];
-            const nomeComprador = reservas[primeiroNumero]?.nome || dadosComprador?.nome || "";
-            const whatsComprador = reservas[primeiroNumero]?.whatsapp || dadosComprador?.whatsapp || "";
-
-            let textoWhatsapp = `Administração: Desde agora nós organizadores agradece a sua participação\n\n`;
-            textoWhatsapp += `👤 *Nome:* ${nomeComprador}\n`;
-            textoWhatsapp += `📱 *WhatsApp:* ${whatsComprador}\n\n`;
-            textoWhatsapp += `🔢 *Números Escolhidos:* ${numerosSelecionados.join(', ')}\n`;
-            textoWhatsapp += `💰 *Valor Total:* R$ ${total.toFixed(2).replace('.', ',')}\n\n`;
-            textoWhatsapp += `🔗 *Pix para Pagamento:* ${linkPagamentoExato}\n\n`;
-            textoWhatsapp += `*Nome do Pix:* Dalton dos Reis Silva\n`;
-            textoWhatsapp += `Pague com o Pix ☝️👆\n\n`;
-            textoWhatsapp += `Por favor, nos enviar o comprovante aqui mesmo para valide seu números!`;
-            textoWhatsapp += `Em caso de dúvidas o contato do beneficiário abaixo.\n\n`;
-            textoWhatsapp += `*Contato do Beneficiado*, Danilo: 91986208487\n\n`;
-            textoWhatsapp += `_____________________\n\n`;
-            textoWhatsapp += `*Qualquer dúvida sobre o link(site), eu(62995679219), sou o Desenvolvedor e Criador do site.*\n\n`;
-
-            const textoCodificado = encodeURIComponent(textoWhatsapp);
-            const numeroDestino = "5562995679219";
-
-            const urlFinalWhatsapp = `https://api.whatsapp.com/send?phone=${numeroDestino}&text=${textoCodificado}`;
-
-            window.open(urlFinalWhatsapp, '_blank');
-
-            modalConfirmacao.style.display = 'none';
+            reader.readAsText(input.files[0]);
         }
-
-        // Ação do botão Copiar PIX
-        btnPagar.addEventListener('click', function() {
-            finalizarEEnviar();
-        });
-
-        // Inicializa a página carregando os dados da planilha antes de tudo
-        carregarDadosDaPlanilha();
-
-        // Executa a função carregarDadosDaPlanilha a cada 30 segundos de forma automatizada
-        setInterval(carregarDadosDaPlanilha, 30000);
     </script>
 </body>
 </html>
